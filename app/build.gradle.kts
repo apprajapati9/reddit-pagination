@@ -80,4 +80,8 @@ dependencies {
     //For network calls
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx)
+
+    //=====PAGING 3
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.compose)
 }

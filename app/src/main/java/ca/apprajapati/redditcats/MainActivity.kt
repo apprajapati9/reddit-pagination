@@ -5,16 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -49,7 +51,7 @@ sealed interface Screen {
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var catsViewModel : CatsViewModel
+    private lateinit var catsViewModel: CatsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +91,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun ShowImage(viewmodel : CatsViewModel) {
+fun ShowImage(viewmodel: CatsViewModel) {
 
     val cats by viewmodel.cats.collectAsStateWithLifecycle()
 
@@ -111,29 +113,43 @@ fun ShowImage(viewmodel : CatsViewModel) {
         )
     }
 
+    if (cats.error.isNotEmpty()) {
+        Text(
+            modifier = Modifier.fillMaxSize(),
+            text = cats.error
+        )
+    }
+
 
 }
 
 @Composable
-fun ShowImages(cats: List<AllCats>){
+fun ShowImages(cats: List<AllCats>) {
 
     LazyColumn {
         items(
             items = cats
-        ) {
-            cat ->
-                ShowCat(cat.data)
+        ) { cat ->
+            ShowCat(cat.data)
         }
     }
 }
 
 
 @Composable
-fun ShowCat(cat : CatInfo){
-    Card {
+fun ShowCat(cat: CatInfo) {
+    Card(
+        modifier = Modifier.padding(top = 5.dp, bottom = 5.dp, start = 1.dp, end = 1.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.LightGray)
+    ) {
+        Spacer(Modifier.height(12.dp))
         Text(text = cat.title)
         AsyncImage(
-            modifier = Modifier.fillMaxWidth().height(300.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp),
             model = ImageRequest.Builder(LocalContext.current)
                 .data(cat.url)
                 .crossfade(true).build(),

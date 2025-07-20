@@ -7,13 +7,12 @@ import ca.apprajapati.redditcats.network.CatsRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import okhttp3.internal.connection.Exchange
 
 class GetCatsUseCase(val repository: CatsRepository) {
 
+    //when we define a function named invoke(), it allows instances of a class to be called as if they were functions, do it only if you want to call instance of a class to behave like a function. other use cases are for operator overloading
     operator fun invoke() : Flow<Resource<List<AllCats>>> = flow {
         emit(Resource.Loading)
-        delay(1000)
 
         try {
             val response = repository.getCats()

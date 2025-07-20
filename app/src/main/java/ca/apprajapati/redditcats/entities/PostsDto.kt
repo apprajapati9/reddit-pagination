@@ -11,7 +11,11 @@ data class CatResponse(
 )
 
 @Serializable
-data class PostData(val children: List<AllCats>)
+data class PostData(
+    val children: List<AllCats>,
+    val after: String?,
+    val before: String?
+)
 
 @Serializable
 data class AllCats(

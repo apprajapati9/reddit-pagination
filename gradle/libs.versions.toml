@@ -10,6 +10,7 @@ activityCompose = "1.10.1"
 composeBom = "2025.07.00"
 coil = "3.2.0"
 
+pagingRuntimeKtx = "3.3.6"
 retrofit = "3.0.0"
 retrofit-logging = "5.1.0"
 
@@ -60,6 +61,10 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 #retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 retrofit-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "retrofit-logging" }
 retrofit-kotlinx = { module ="com.squareup.retrofit2:converter-kotlinx-serialization", version.ref="retrofit"}
+
+#PAGING3
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingRuntimeKtx" }
+androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "pagingRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
