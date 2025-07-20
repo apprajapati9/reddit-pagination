@@ -151,7 +151,7 @@ fun ShowCat(cat: CatInfo) {
                 .fillMaxWidth()
                 .height(300.dp),
             model = ImageRequest.Builder(LocalContext.current)
-                .data(cat.url)
+                .data(cat.imageUrl)
                 .crossfade(true).build(),
             contentDescription = "Cat Image",
             contentScale = ContentScale.Fit,

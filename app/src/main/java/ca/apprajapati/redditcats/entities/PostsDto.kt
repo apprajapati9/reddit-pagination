@@ -1,8 +1,7 @@
 package ca.apprajapati.redditcats.entities
 
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
 
 @Serializable
@@ -25,7 +24,8 @@ data class AllCats(
 @Serializable
 data class CatInfo(
     val author: String,
-    val url: String,
+    @SerialName("url")
+    val imageUrl: String,
     val title : String,
 )
 
