@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -56,4 +59,21 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //=============== Nav3 =====================
+    //Core nav3 api. Includes NavEntry, Entry provider, and DSL
+    implementation(libs.androidx.navigation3.runtime)
+    //provides classes to display content, including NavDisplay and Scene
+    implementation(libs.androidx.navigation3.ui)
+    //allows view models to be scoped to entries in the back stack
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    //support for adaptive layouts (sceneStrategies, Scenes and metadata definitions)
+    //implementation(libs.androidx.material3.adaptive.navigation3)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
+
+
+    // Coil - image loading from URL
+    implementation(libs.coil.compose)
+    implementation(libs.coil3.network) //must add this for network call using AsyncImage
 }
