@@ -76,4 +76,8 @@ dependencies {
     // Coil - image loading from URL
     implementation(libs.coil.compose)
     implementation(libs.coil3.network) //must add this for network call using AsyncImage
+
+    //For network calls
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx)
 }

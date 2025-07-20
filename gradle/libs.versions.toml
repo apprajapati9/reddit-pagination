@@ -10,6 +10,9 @@ activityCompose = "1.10.1"
 composeBom = "2025.07.00"
 coil = "3.2.0"
 
+retrofit = "3.0.0"
+retrofit-logging = "5.1.0"
+
 ###NAV 3 libs
 nav3Core = "1.0.0-alpha05"
 material3AdaptiveNav3 = "1.0.0-SNAPSHOT"
@@ -49,8 +52,14 @@ androidx-material3-window-size-class1-android = { group = "androidx.compose.mate
 
 coil3 = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
-
 coil3-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil"}
+
+#retrofit
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+##retrofit-gson = { module ="com.squareup.retrofit2:converter-gson", version.ref="retrofit"}
+#retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+retrofit-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "retrofit-logging" }
+retrofit-kotlinx = { module ="com.squareup.retrofit2:converter-kotlinx-serialization", version.ref="retrofit"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
