@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,22 +15,38 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -42,10 +59,22 @@ import ca.apprajapati.redditcats.ui.theme.RedditCatsTheme
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlin.collections.set
 
 
-sealed interface Screen {
-    object Home : Screen
+@Serializable
+sealed interface ScreenKey : NavKey
+
+
+@Serializable
+sealed interface Screen : ScreenKey {
+    @Serializable
+    object WithoutPaging : Screen
+
+    @Serializable
+    object Paging : Screen
 }
 
 
@@ -60,24 +89,76 @@ class MainActivity : ComponentActivity() {
 
         val repository = CatsRepositoryImpl(Retrofit.catsApi)
         val factory = ViewModelFactory(GetCatsUseCase(repository))
-        catsViewModel = ViewModelProvider(this, factory).get(CatsViewModel::class.java)
+        catsViewModel = ViewModelProvider(this, factory)[CatsViewModel::class.java]
 
         setContent {
             RedditCatsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    val backStack = mutableListOf<Screen>(Screen.Home)
+                val tabs = listOf(Screen.WithoutPaging, Screen.Paging)
+
+                val tabBackStacks = remember {
+                    TabBackStacks<ScreenKey>(
+                        startDestinations = tabs.associateWith { it }
+                    )
+                }
+
+                var selectedTab by rememberSaveable(stateSaver = AppScreenKeySaver) {
+                    mutableStateOf(Screen.WithoutPaging)
+                }
+                val backStack = tabBackStacks.getStack(selectedTab)
+
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        NavigationBar {
+                            tabs.forEach { tab ->
+                                val label = when (tab) {
+                                    Screen.Paging -> {
+                                        "Paging"
+                                    }
+
+                                    Screen.WithoutPaging -> {
+                                        "Without Paging"
+                                    }
+                                }
+
+                                val icon = when (tab) {
+                                    Screen.Paging -> Icons.Default.Home
+                                    Screen.WithoutPaging -> Icons.Default.Person
+                                }
+
+                                BottomBarItem(
+                                    label = label,
+                                    icon = icon,
+                                    selected = selectedTab == tab
+                                ) {
+                                    selectedTab = tab
+                                }
+                            }
+
+                        }
+                    }) { innerPadding ->
 
                     Surface(
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         NavDisplay(
                             backStack = backStack,
-                            onBack = { backStack.removeFirstOrNull() },
+                            onBack = { steps ->
+                                repeat(steps) {
+                                    tabBackStacks.pop(selectedTab)
+                                }
+                            },
                             entryProvider = entryProvider {
 
-                                entry<Screen.Home> {
+                                entry<Screen.WithoutPaging> {
                                     ShowImage(catsViewModel)
+                                }
+
+                                entry<Screen.Paging> {
+                                    //ShowImage(catsViewModel)
+                                    Text("Ajay")
                                 }
                             }
                         )
@@ -158,4 +239,53 @@ fun ShowCat(cat: CatInfo) {
         )
 
     }
+}
+
+// Tabs stack logic and stack impl
+val AppScreenKeySaver = Saver<ScreenKey, String>(
+    save = { Json.encodeToString(ScreenKey.serializer(), it) },
+    restore = { Json.decodeFromString(ScreenKey.serializer(), it) }
+)
+
+/*
+    Data organization format
+    Home [Key] -> V ... list
+    Profile[key] -> ProfileDetails.. list
+    Settings[Key] -> SettingsDetails... list.
+ */
+class TabBackStacks<T : ScreenKey>(val startDestinations: Map<T, T>) {
+    private val stacks = mutableStateMapOf<T, SnapshotStateList<T>>()
+
+    init {
+        startDestinations.forEach { (tab, root) ->
+            stacks[tab] = mutableStateListOf(root)
+        }
+    }
+
+    fun getStack(tab: T): SnapshotStateList<T> = stacks[tab]!!
+
+    fun push(tab: T, screen: T) {
+        stacks[tab]?.add(screen)
+    }
+
+    fun pop(tab: T) {
+        stacks[tab]?.removeLastOrNull()
+    }
+
+    fun current(tab: T): T = stacks[tab]?.last() ?: startDestinations[tab]!!
+}
+
+@Composable
+fun RowScope.BottomBarItem(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = { Icon(icon, contentDescription = label) },
+        label = { Text(label) }
+    )
 }
