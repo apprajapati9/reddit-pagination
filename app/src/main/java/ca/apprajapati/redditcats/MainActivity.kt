@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
@@ -20,12 +21,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -54,9 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -195,6 +197,17 @@ fun PagedCatsScreen(cats: LazyPagingItems<CatInfo>) {
         }
     }
 
+    val favorites =  remember {
+        mutableStateMapOf<String, Boolean>()
+    }
+
+    LaunchedEffect(favorites.size) {
+        favorites.forEach {
+            k,v ->
+                Log.d("Ajay", "id -> $k, v -> $v added")
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
 
         if (cats.loadState.refresh is LoadState.Loading) {
@@ -212,7 +225,14 @@ fun PagedCatsScreen(cats: LazyPagingItems<CatInfo>) {
                     cats[it]?.imageUrl ?: -1
                 }) { index ->
                     cats[index]?.let {
-                        ShowCat(it)
+                        ShowCat(it, favorites.contains(it.id)) {
+                            id ->
+                            if(favorites.contains(id)){
+                                favorites.remove(id)
+                            }else{
+                               favorites[id] = true
+                            }
+                        }
                     }
                 }
 
@@ -269,32 +289,53 @@ fun ShowImages(cats: List<AllCats>) {
         items(
             items = cats
         ) { cat ->
-            ShowCat(cat.data)
+//            ShowCat(cat.data) {
+//
+//            }
         }
     }
 }
 
 
 @Composable
-fun ShowCat(cat: CatInfo) {
+fun ShowCat(cat: CatInfo, isFav: Boolean, addToFav: (String) -> Unit) {
     Card(
         modifier = Modifier.padding(top = 5.dp, bottom = 5.dp, start = 1.dp, end = 1.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.LightGray)
     ) {
-        Spacer(Modifier.height(12.dp))
-        Text(text = cat.title)
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(cat.imageUrl)
-                .crossfade(true).build(),
-            contentDescription = "Cat Image",
-            contentScale = ContentScale.Fit,
-        )
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Spacer(Modifier.height(12.dp))
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(if (cat.imageUrl.contains("gallery")) cat.thumbnail else cat.imageUrl)
+                    .crossfade(true).build(),
+                contentDescription = "Cat Image",
+                contentScale = ContentScale.Fit,
+            )
+
+            Spacer(modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .background(Color.Black.copy(alpha = 0.3f))
+                .height(50.dp)
+                .fillMaxWidth())
+
+            Text(modifier = Modifier.align(Alignment.BottomCenter), text = cat.title, color = Color.White, maxLines = 2)
+
+            IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = {
+                addToFav(cat.id)
+            }) {
+                Icon(imageVector = if(isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = "Favorite", tint = if(isFav) Color.Red else Color.Black)
+            }
+        }
 
     }
 }

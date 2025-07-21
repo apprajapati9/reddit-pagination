@@ -28,6 +28,7 @@ data class CatInfo(
     @SerialName("url")
     val imageUrl: String,
     val title: String,
+    val thumbnail: String
 )
 
 sealed class Resource<out T : Any?> {

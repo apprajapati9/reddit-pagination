@@ -3,7 +3,6 @@ package ca.apprajapati.redditcats.network
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import ca.apprajapati.redditcats.entities.AllCats
 import ca.apprajapati.redditcats.entities.CatInfo
 import coil3.network.HttpException
 import okio.IOException
