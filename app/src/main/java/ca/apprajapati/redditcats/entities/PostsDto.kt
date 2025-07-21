@@ -23,14 +23,15 @@ data class AllCats(
 
 @Serializable
 data class CatInfo(
+    val id: String,
     val author: String,
     @SerialName("url")
     val imageUrl: String,
-    val title : String,
+    val title: String,
 )
 
-sealed class Resource<out T: Any?> {
-    data class Success<out T: Any?>(val data: T) : Resource<T>()
-    data class Error<out T: Any?>(val data : T? = null, val message : String) : Resource<Nothing>()
-    object Loading: Resource<Nothing>()
+sealed class Resource<out T : Any?> {
+    data class Success<out T : Any?>(val data: T) : Resource<T>()
+    data class Error<out T : Any?>(val data: T? = null, val message: String) : Resource<Nothing>()
+    object Loading : Resource<Nothing>()
 }

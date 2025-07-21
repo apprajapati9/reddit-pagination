@@ -8,18 +8,18 @@ import ca.apprajapati.redditcats.entities.CatResponse
 import kotlinx.coroutines.flow.Flow
 
 interface CatsRepository {
-    suspend fun getCats() : CatResponse
-    fun getPagedCats() : Flow<PagingData<CatInfo>>
+    suspend fun getCats(): CatResponse
+    fun getPagedCats(): Flow<PagingData<CatInfo>>
 }
 
 
 class CatsRepositoryImpl(private val api: CatsApi) : CatsRepository {
     override suspend fun getCats(): CatResponse {
-        return api.getCatPics()
+        return api.getCatPics().body()!!
     }
 
     override fun getPagedCats() = Pager(
-        config = PagingConfig(pageSize = 20, enablePlaceholders = false),
-        pagingSourceFactory = { RedditPagingSource(api)}
+        config = PagingConfig(pageSize = 40, enablePlaceholders = false, prefetchDistance = 3),
+        pagingSourceFactory = { RedditPagingSource(api) }
     ).flow
 }

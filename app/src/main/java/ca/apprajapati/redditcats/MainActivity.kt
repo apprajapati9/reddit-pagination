@@ -1,10 +1,14 @@
 package ca.apprajapati.redditcats
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +42,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -49,7 +54,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import ca.apprajapati.redditcats.entities.AllCats
 import ca.apprajapati.redditcats.entities.CatInfo
 import ca.apprajapati.redditcats.getCatsUseCase.GetCatsUseCase
@@ -88,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
 
         val repository = CatsRepositoryImpl(Retrofit.catsApi)
-        val factory = ViewModelFactory(GetCatsUseCase(repository))
+        val factory = ViewModelFactory(repository, GetCatsUseCase(repository))
         catsViewModel = ViewModelProvider(this, factory)[CatsViewModel::class.java]
 
         setContent {
@@ -107,6 +117,7 @@ class MainActivity : ComponentActivity() {
                 }
                 val backStack = tabBackStacks.getStack(selectedTab)
 
+                val pagedCats = catsViewModel.pagingCats.collectAsLazyPagingItems()
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -144,6 +155,10 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         NavDisplay(
+                            entryDecorators = listOf(
+//                                rememberSavedStateNavEntryDecorator(),
+//                                rememberSceneSetupNavEntryDecorator()
+                            ),
                             backStack = backStack,
                             onBack = { steps ->
                                 repeat(steps) {
@@ -157,14 +172,56 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 entry<Screen.Paging> {
-                                    //ShowImage(catsViewModel)
-                                    Text("Ajay")
+                                    PagedCatsScreen(pagedCats)
                                 }
                             }
                         )
 
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun PagedCatsScreen(cats: LazyPagingItems<CatInfo>) {
+
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = cats.loadState) {
+        if (cats.loadState.refresh is LoadState.Error) {
+            Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        if (cats.loadState.refresh is LoadState.Loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                items(count = cats.itemCount, key = {
+                    cats[it]?.imageUrl ?: -1
+                }) { index ->
+                    cats[index]?.let {
+                        ShowCat(it)
+                    }
+                }
+
+                item {
+                    if (cats.loadState.append is LoadState.Loading) {
+                        CircularProgressIndicator()
+                    }
+                }
+
             }
         }
     }
@@ -177,6 +234,7 @@ fun ShowImage(viewmodel: CatsViewModel) {
     val cats by viewmodel.cats.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        Log.d("Ajay", "LaunchedEffect -> Api call to get Cats")
         viewmodel.getCats()
     }
 

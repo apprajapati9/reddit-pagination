@@ -4,6 +4,7 @@ import ca.apprajapati.redditcats.entities.CatResponse
 import ca.apprajapati.redditcats.network.CatsApi.Companion.BASE_URL
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.GET
@@ -20,13 +21,13 @@ val json = Json {
 
 interface CatsApi {
 
-    @GET(value = "r/catpics/top.json")
+    @GET(value = "r/catpics/hot.json")
     suspend fun getCatPics(
-        @Query("after") after: String = "",
-        @Query("limit") loadSize: Int = 10, //number of posts to return
-        @Query("limit") before: String = "",
-       // @Query("count") count: Int = loadSize
-    ): CatResponse
+        @Query("limit") loadSize: Int = 0, //number of posts to return
+        @Query("after") after: String? = null,
+        @Query("before") before: String? = null,
+        //  @Query("count") count: Int = 10,
+    ): Response<CatResponse>
 
     companion object {
         const val BASE_URL = "https://reddit.com/"
