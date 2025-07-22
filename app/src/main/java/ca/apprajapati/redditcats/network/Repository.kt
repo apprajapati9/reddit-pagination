@@ -13,13 +13,13 @@ interface CatsRepository {
 }
 
 
-class CatsRepositoryImpl(private val api: CatsApi) : CatsRepository {
+class CatsRepositoryImpl(private val remoteDataSource: RedditRemoteDataSource) : CatsRepository {
     override suspend fun getCats(): CatResponse {
-        return api.getCatPics().body()!!
+        return remoteDataSource.getCats().body()!!
     }
 
     override fun getPagedCats() = Pager(
         config = PagingConfig(pageSize = 40, enablePlaceholders = false, prefetchDistance = 3),
-        pagingSourceFactory = { RedditPagingSource(api) }
+        pagingSourceFactory = { RedditPagingSource(remoteDataSource) }
     ).flow
 }

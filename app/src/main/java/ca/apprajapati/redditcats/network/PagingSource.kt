@@ -9,7 +9,7 @@ import okio.IOException
 
 
 class RedditPagingSource(
-    private val api: CatsApi
+    private val remoteDataSource: RedditRemoteDataSource
 ) : PagingSource<String, CatInfo>() {
 
 
@@ -24,7 +24,7 @@ class RedditPagingSource(
 
         return try {
 
-            val response = api.getCatPics(loadSize = params.loadSize, after = prevKey)
+            val response = remoteDataSource.getCats(loadSize = params.loadSize, after = prevKey)
 
             val listing = response.body()?.data //Reddit listing api name
 

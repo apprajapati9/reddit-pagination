@@ -66,6 +66,7 @@ import ca.apprajapati.redditcats.entities.AllCats
 import ca.apprajapati.redditcats.entities.CatInfo
 import ca.apprajapati.redditcats.getCatsUseCase.GetCatsUseCase
 import ca.apprajapati.redditcats.network.CatsRepositoryImpl
+import ca.apprajapati.redditcats.network.RedditRemoteDataSourceImpl
 import ca.apprajapati.redditcats.network.Retrofit
 import ca.apprajapati.redditcats.ui.theme.RedditCatsTheme
 import coil3.compose.AsyncImage
@@ -99,7 +100,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
 
-        val repository = CatsRepositoryImpl(Retrofit.catsApi)
+        val repository = CatsRepositoryImpl(RedditRemoteDataSourceImpl(Retrofit.catsApi))
         val factory = ViewModelFactory(repository, GetCatsUseCase(repository))
         catsViewModel = ViewModelProvider(this, factory)[CatsViewModel::class.java]
 
@@ -289,9 +290,9 @@ fun ShowImages(cats: List<AllCats>) {
         items(
             items = cats
         ) { cat ->
-//            ShowCat(cat.data) {
-//
-//            }
+            ShowCat(cat.data, false) {
+
+            }
         }
     }
 }
