@@ -5,6 +5,8 @@ plugins {
 
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.hilt)
 }
 
 android {
@@ -77,11 +79,18 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil3.network) //must add this for network call using AsyncImage
 
-    //For network calls
+    //For network calls - Retrofit
     implementation(libs.retrofit)
+    implementation(libs.retrofit.logging)
     implementation(libs.retrofit.kotlinx)
 
     //=====PAGING 3
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.compose)
+
+    // ===== HILT
+    implementation(libs.hilt.android)
+    // Hilt for Jetpack Compose
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
 }

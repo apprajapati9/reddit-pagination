@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import ca.apprajapati.redditcats.entities.CatInfo
 import ca.apprajapati.redditcats.entities.CatResponse
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 interface CatsRepository {
     suspend fun getCats(): CatResponse
@@ -13,7 +14,7 @@ interface CatsRepository {
 }
 
 
-class CatsRepositoryImpl(private val remoteDataSource: RedditRemoteDataSource) : CatsRepository {
+class CatsRepositoryImpl @Inject constructor(private val remoteDataSource: RedditRemoteDataSource) : CatsRepository {
     override suspend fun getCats(): CatResponse {
         return remoteDataSource.getCats().body()!!
     }

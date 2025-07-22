@@ -2,17 +2,18 @@ package ca.apprajapati.redditcats
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import ca.apprajapati.redditcats.entities.AllCats
 import ca.apprajapati.redditcats.entities.Resource
 import ca.apprajapati.redditcats.getCatsUseCase.GetCatsUseCase
 import ca.apprajapati.redditcats.network.CatsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
 
 data class CatPostState(
@@ -22,7 +23,8 @@ data class CatPostState(
 )
 
 
-class CatsViewModel(
+@HiltViewModel
+class CatsViewModel @Inject constructor(
     repository: CatsRepository,
     val getCatsUseCase: GetCatsUseCase
 ) : ViewModel() {
@@ -54,16 +56,4 @@ class CatsViewModel(
         }.launchIn(viewModelScope)
     }
 
-}
-
-class ViewModelFactory(
-    private val repository: CatsRepository,
-    private val useCase: GetCatsUseCase
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(CatsViewModel::class.java)) {
-            return CatsViewModel(repository, useCase) as T
-        }
-        throw IllegalArgumentException("Unknown viewmodel class")
-    }
 }

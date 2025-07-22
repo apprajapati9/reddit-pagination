@@ -22,6 +22,11 @@ kotlinSerialization = "2.2.0"
 kotlinxSerializationCore = "1.9.0"
 material3WindowSizeClassAndroid = "1.3.2"
 
+#HILT
+kspVersion="2.2.0-2.0.2"
+hiltAndroid = "2.57"
+hiltNavigationCompose = "1.2.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -66,10 +71,19 @@ retrofit-kotlinx = { module ="com.squareup.retrofit2:converter-kotlinx-serializa
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingRuntimeKtx" }
 androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "pagingRuntimeKtx" }
 
+
+##HILT
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+kotlin-hilt = {id = "com.google.dagger.hilt.android", version.ref="hiltAndroid"}
 
 #kotlin-parcelize
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize",  version.ref = "kotlin"  }

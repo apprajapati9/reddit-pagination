@@ -53,7 +53,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
@@ -64,14 +65,12 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import ca.apprajapati.redditcats.entities.AllCats
 import ca.apprajapati.redditcats.entities.CatInfo
-import ca.apprajapati.redditcats.getCatsUseCase.GetCatsUseCase
-import ca.apprajapati.redditcats.network.CatsRepositoryImpl
-import ca.apprajapati.redditcats.network.RedditRemoteDataSourceImpl
-import ca.apprajapati.redditcats.network.Retrofit
 import ca.apprajapati.redditcats.ui.theme.RedditCatsTheme
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import dagger.hilt.EntryPoint
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.collections.set
@@ -90,7 +89,7 @@ sealed interface Screen : ScreenKey {
     object Paging : Screen
 }
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private lateinit var catsViewModel: CatsViewModel
@@ -99,12 +98,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
-        val repository = CatsRepositoryImpl(RedditRemoteDataSourceImpl(Retrofit.catsApi))
-        val factory = ViewModelFactory(repository, GetCatsUseCase(repository))
-        catsViewModel = ViewModelProvider(this, factory)[CatsViewModel::class.java]
-
         setContent {
+
+            // hiltViewModel() - auto generates factory via Hilt so no need of ViewModelProvider.Factory, vs viewModel() require factory to inject dependencies.
+            catsViewModel = hiltViewModel()
+
             RedditCatsTheme {
 
                 val tabs = listOf(Screen.WithoutPaging, Screen.Paging)
@@ -198,14 +196,13 @@ fun PagedCatsScreen(cats: LazyPagingItems<CatInfo>) {
         }
     }
 
-    val favorites =  remember {
+    val favorites = remember {
         mutableStateMapOf<String, Boolean>()
     }
 
     LaunchedEffect(favorites.size) {
-        favorites.forEach {
-            k,v ->
-                Log.d("Ajay", "id -> $k, v -> $v added")
+        favorites.forEach { k, v ->
+            Log.d("Ajay", "id -> $k, v -> $v added")
         }
     }
 
@@ -226,12 +223,11 @@ fun PagedCatsScreen(cats: LazyPagingItems<CatInfo>) {
                     cats[it]?.imageUrl ?: -1
                 }) { index ->
                     cats[index]?.let {
-                        ShowCat(it, favorites.contains(it.id)) {
-                            id ->
-                            if(favorites.contains(id)){
+                        ShowCat(it, favorites.contains(it.id)) { id ->
+                            if (favorites.contains(id)) {
                                 favorites.remove(id)
-                            }else{
-                               favorites[id] = true
+                            } else {
+                                favorites[id] = true
                             }
                         }
                     }
@@ -323,18 +319,29 @@ fun ShowCat(cat: CatInfo, isFav: Boolean, addToFav: (String) -> Unit) {
                 contentScale = ContentScale.Fit,
             )
 
-            Spacer(modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .background(Color.Black.copy(alpha = 0.3f))
-                .height(50.dp)
-                .fillMaxWidth())
+            Spacer(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .height(50.dp)
+                    .fillMaxWidth()
+            )
 
-            Text(modifier = Modifier.align(Alignment.BottomCenter), text = cat.title, color = Color.White, maxLines = 2)
+            Text(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                text = cat.title,
+                color = Color.White,
+                maxLines = 2
+            )
 
             IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = {
                 addToFav(cat.id)
             }) {
-                Icon(imageVector = if(isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = "Favorite", tint = if(isFav) Color.Red else Color.Black)
+                Icon(
+                    imageVector = if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = if (isFav) Color.Red else Color.Black
+                )
             }
         }
 
